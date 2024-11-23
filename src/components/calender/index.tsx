@@ -11,63 +11,86 @@ const Calendar: React.FC = () => {
     );
 
     const onDragEnd = (result: DropResult) => {
-        const { source, destination } = result;
-
+        const { source, destination, type } = result;
+    
+        // Nếu không có điểm đến, kết thúc
         if (!destination) return;
-
-        // If source and destination are the same (no move)
+    
+        // Nếu vị trí không thay đổi
         if (
             source.droppableId === destination.droppableId &&
             source.index === destination.index
         ) {
             return;
         }
-
-        const sourceDayId = source.droppableId;
-        const destinationDayId = destination.droppableId;
-
-        const sourceDayIndex = weeklyWorkouts.findIndex(
-            (day) => day.id === sourceDayId
-        );
-        const destinationDayIndex = weeklyWorkouts.findIndex(
-            (day) => day.id === destinationDayId
-        );
-
-        // If source or destination day not found, return
-        if (sourceDayIndex === -1 || destinationDayIndex === -1) return;
-
+    
         const updatedWorkouts = [...weeklyWorkouts];
-        const sourceWorkouts = updatedWorkouts[sourceDayIndex].workouts;
-        let destinationWorkouts = updatedWorkouts[destinationDayIndex].workouts;
-
-        // Ensure destination day has a workout array initialized if it is empty
-        if (!destinationWorkouts) {
-            destinationWorkouts = [];
-        }
-
-        if (
-            source.droppableId === destination.droppableId &&
-            source.index !== destination.index
-        ) {
-            // Move within the same day (same workout)
-            const [movedWorkout] = sourceWorkouts.splice(source.index, 1);
-            sourceWorkouts.splice(destination.index, 0, movedWorkout);
-        } else {
-            // Move workout between days
-            const [movedWorkout] = sourceWorkouts.splice(source.index, 1);
-
-            // If the destination day has no workouts, we initialize it first
-            if (destinationWorkouts === undefined) {
-                destinationWorkouts = [];
+    
+        if (type === "WORKOUT") {
+            // Di chuyển workout giữa các ngày
+            const sourceDayIndex = updatedWorkouts.findIndex(
+                (day) => day.id === source.droppableId
+            );
+            const destinationDayIndex = updatedWorkouts.findIndex(
+                (day) => day.id === destination.droppableId
+            );
+    
+            if (sourceDayIndex === -1 || destinationDayIndex === -1) return;
+    
+            const sourceDay = updatedWorkouts[sourceDayIndex];
+            const destinationDay = updatedWorkouts[destinationDayIndex];
+    
+            // Lấy workout từ ngày nguồn
+            const [movedWorkout] = sourceDay.workouts.splice(source.index, 1);
+    
+            // Thêm workout vào ngày đích
+            destinationDay.workouts.splice(destination.index, 0, movedWorkout);
+    
+            setWeeklyWorkouts(updatedWorkouts);
+        } else if (type === "EXERCISE") {
+            // Di chuyển exercise trong workout
+            const sourceWorkoutId = source.droppableId.split("-")[1];
+            const destinationWorkoutId = destination.droppableId.split("-")[1];
+    
+            const sourceDayIndex = updatedWorkouts.findIndex((day) =>
+                day.workouts.some((w) => w.id === sourceWorkoutId)
+            );
+            const destinationDayIndex = updatedWorkouts.findIndex((day) =>
+                day.workouts.some((w) => w.id === destinationWorkoutId)
+            );
+    
+            if (sourceDayIndex === -1 || destinationDayIndex === -1) return;
+    
+            const sourceWorkout = updatedWorkouts[sourceDayIndex].workouts.find(
+                (w) => w.id === sourceWorkoutId
+            );
+            const destinationWorkout = updatedWorkouts[destinationDayIndex].workouts.find(
+                (w) => w.id === destinationWorkoutId
+            );
+    
+            if (!sourceWorkout || !destinationWorkout) return;
+    
+            const sourceExercises = Array.from(sourceWorkout.exercises);
+            const [movedExercise] = sourceExercises.splice(source.index, 1);
+    
+            if (source.droppableId === destination.droppableId) {
+                // Kéo thả trong cùng workout
+                sourceExercises.splice(destination.index, 0, movedExercise);
+                sourceWorkout.exercises = sourceExercises;
+            } else {
+                // Kéo thả giữa hai workout khác nhau
+                const destinationExercises = Array.from(destinationWorkout.exercises);
+                destinationExercises.splice(destination.index, 0, movedExercise);
+    
+                sourceWorkout.exercises = sourceExercises;
+                destinationWorkout.exercises = destinationExercises;
             }
-
-            destinationWorkouts.splice(destination.index, 0, movedWorkout);
-            updatedWorkouts[destinationDayIndex].workouts = destinationWorkouts;
+    
+            setWeeklyWorkouts(updatedWorkouts);
         }
-
-        updatedWorkouts[sourceDayIndex].workouts = sourceWorkouts;
-        setWeeklyWorkouts(updatedWorkouts);
     };
+    
+    
     return (
         <DragDropContext onDragEnd={onDragEnd}>
             <div className="calendar">

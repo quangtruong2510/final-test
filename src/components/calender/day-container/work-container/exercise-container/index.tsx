@@ -2,14 +2,16 @@ import React from "react";
 import "./index.scss";
 import { Exercise } from "../../../../../type";
 import { Draggable } from "@hello-pangea/dnd";
+
 interface IExerciseProps {
     exercise: Exercise;
     index: number;
 }
+
 const ExerciseContainer: React.FC<IExerciseProps> = ({ exercise, index }) => {
     return (
         <Draggable
-            draggableId={`exercise-${exercise.id}-${index}`}
+            draggableId={`exercise-${exercise.id}`}
             index={index}
         >
             {(provided) => (
@@ -24,7 +26,7 @@ const ExerciseContainer: React.FC<IExerciseProps> = ({ exercise, index }) => {
                     </div>
                     <div className="set-group">
                         <div className="exercise-reps">
-                            {exercise.repetitions + "x"}
+                            {exercise.repetitions}x
                         </div>
                         <div className="exercise-sets ellipsis">
                             {exercise.setInformation}
@@ -35,4 +37,5 @@ const ExerciseContainer: React.FC<IExerciseProps> = ({ exercise, index }) => {
         </Draggable>
     );
 };
+
 export default ExerciseContainer;

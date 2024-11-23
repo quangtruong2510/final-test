@@ -3,27 +3,26 @@ import "./index.scss";
 import ExerciseContainer from "./exercise-container";
 import { Workout } from "../../../../type";
 import { Draggable, Droppable } from "@hello-pangea/dnd";
+
 interface IWorkoutProps {
     workout: Workout;
     index: number;
 }
+
 const WorkoutContainer: React.FC<IWorkoutProps> = ({ workout, index }) => {
     return (
-        <Draggable draggableId={`workout-${workout.id}-${index}`} index={index}>
-            {(provided) => (
-                <div
-                    className="workout-container"
-                    ref={provided.innerRef}
-                    {...provided.draggableProps}
-                    {...provided.dragHandleProps}
-                >
+        <Draggable draggableId={workout.id} index={index}>
+        {(provided) => (
+            <div
+                className="workout-container"
+                ref={provided.innerRef}
+                {...provided.draggableProps}
+                {...provided.dragHandleProps}
+            >
                     <div className="workout-header ellipsis">
                         {workout.title}
                     </div>
-                    <Droppable
-                        droppableId={workout.id.toString()}
-                        type="EXERCISE"
-                    >
+                    <Droppable droppableId={`exercises-${workout.id}`} type="EXERCISE">
                         {(provided) => (
                             <div
                                 className="exercises"
