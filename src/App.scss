@@ -1,0 +1,9 @@
+#root {
+  font-family: "Open Sans";
+}
+
+.ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
